@@ -48,77 +48,52 @@ def get_offline_data(start_date, current_date, end_date):
 def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
     # convert results dictionary into a dataframe so that we can use altair to make nice plots
     status_quo_results = scenario_results['status-quo']
-    # status_quo_yearly_returns = scenario_results['status-quo'][1]
-    # pessimistic_results = scenario_results['pessimistic'][0]
-    # pessimistic_yearly_returns = scenario_results['pessimistic'][1]
-    # optimistic_results = scenario_results['optimistic'][0]
-    # optimistic_yearly_returns = scenario_results['optimistic'][1]
-
+    
     col1, col2, col3 = st.columns(3)
-    # col1, col2 = st.columns(2)
-
+    
     power_dff = pd.DataFrame()
     power_dff['RBP'] = status_quo_results['rb_total_power_eib']
     power_dff['QAP'] = status_quo_results['qa_total_power_eib']
-    # power_dff['RBP-Pessimistic'] = pessimistic_results['rb_total_power_eib']
-    # power_dff['QAP-Pessimistic'] = pessimistic_results['qa_total_power_eib']
-    # power_dff['RBP-Optimistic'] = optimistic_results['rb_total_power_eib']
-    # power_dff['QAP-Optimistic'] = optimistic_results['qa_total_power_eib']
     power_dff['Baseline'] = baseline
     power_dff['date'] = pd.to_datetime(du.get_t(start_date, end_date=end_date))
 
     minting_dff = pd.DataFrame()
     minting_dff['StatusQuo'] = status_quo_results['day_network_reward']
-    # minting_dff['Pessimistic'] = pessimistic_results['day_network_reward']
-    # minting_dff['Optimistic'] = optimistic_results['day_network_reward']
     minting_dff['date'] = pd.to_datetime(du.get_t(start_date, end_date=end_date))
 
     cs_dff = pd.DataFrame()
     cs_dff['StatusQuo'] = status_quo_results['circ_supply'] / 1e6
-    # cs_dff['Pessimistic'] = pessimistic_results['day_network_reward']
-    # cs_dff['Optimistic'] = optimistic_results['day_network_reward']
     cs_dff['date'] = pd.to_datetime(du.get_t(start_date, end_date=end_date))
 
     locked_dff = pd.DataFrame()
     locked_dff['StatusQuo'] = status_quo_results['network_locked'] / 1e6
-    # locked_dff['Pessimistic'] = pessimistic_results['day_network_reward']
-    # locked_dff['Optimistic'] = optimistic_results['day_network_reward']
     locked_dff['date'] = pd.to_datetime(du.get_t(start_date, end_date=end_date))
-
-    # returns_per_pib_dff = pd.DataFrame()
-    # returns_per_pib_dff['StatusQuo'] = status_quo_results['1y_return_per_pib']
-    # # returns_per_pib_dff['Pessimistic'] = pessimistic_results['1y_return_per_pib']
-    # # returns_per_pib_dff['Optimistic'] = optimistic_results['1y_return_per_pib']
-    # returns_per_pib_dff['date'] = pd.to_datetime(du.get_t(start_date, forecast_length=returns_per_pib_dff.shape[0]))
 
     pledge_dff = pd.DataFrame()
     pledge_dff['StatusQuo'] = status_quo_results['day_pledge_per_QAP']
-    # pledge_dff['Pessimistic'] = pessimistic_results['day_pledge_per_QAP']
-    # pledge_dff['Optimistic'] = optimistic_results['day_pledge_per_QAP']
     pledge_dff['date'] = pd.to_datetime(du.get_t(start_date, forecast_length=pledge_dff.shape[0]))
 
     roi_dff = pd.DataFrame()
     roi_dff['StatusQuo'] = status_quo_results['1y_sector_roi'] * 100
-    # roi_dff['Pessimistic'] = pessimistic_results['1y_sector_roi'] * 100
-    # roi_dff['Optimistic'] = optimistic_results['1y_sector_roi'] * 100
     roi_dff['date'] = pd.to_datetime(du.get_t(start_date, forecast_length=roi_dff.shape[0]))
 
-    # roi_with_costs_dff = pd.DataFrame()
-    # roi_with_costs_dff['FIL+-sq'] = status_quo_results['FIL+']
-    # roi_with_costs_dff['CC-sq'] = status_quo_results['CC']
-    # # roi_with_costs_dff['FIL+-o'] = optimistic_results['FIL+']
-    # # roi_with_costs_dff['CC-o'] = optimistic_results['CC']
-    # # roi_with_costs_dff['FIL+-p'] = pessimistic_results['FIL+']
-    # # roi_with_costs_dff['CC-p'] = pessimistic_results['CC']
-    # roi_with_costs_dff['date'] = pd.to_datetime(du.get_t(start_date, forecast_length=roi_with_costs_dff.shape[0]))
-    
+    rps_dff = pd.DataFrame()
+    rps_dff['StatusQuo'] = status_quo_results['1y_return_per_sector'] * 100
+    rps_dff['date'] = pd.to_datetime(du.get_t(start_date, forecast_length=roi_dff.shape[0]))
+
+    drps_dff = pd.DataFrame()
+    drps_dff['StatusQuo'] = status_quo_results['day_rewards_per_sector'] * 100
+    drps_dff['date'] = pd.to_datetime(du.get_t(start_date, end_date=end_date))
+
+    dnr_dff = pd.DataFrame()
+    dnr_dff['StatusQuo'] = status_quo_results['day_network_reward'] * 100
+    dnr_dff['date'] = pd.to_datetime(du.get_t(start_date, end_date=end_date))
+
     with col1:
         power_df = pd.melt(power_dff, id_vars=["date"], 
                            value_vars=[
                                "Baseline", 
                                "RBP", "QAP",],
-                            #    "RBP-Pessimistic", "QAP-Pessimistic",
-                            #    "RBP-Optimistic", "QAP-Optimistic"], 
                            var_name='Power', 
                            value_name='EIB')
         power_df['EIB'] = power_df['EIB']
@@ -145,12 +120,24 @@ def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
                     y=alt.Y("%"), color=alt.Color('Scenario', legend=None))
             .properties(title="1Y Sector FoFR")
             .configure_title(fontSize=14, anchor='middle')
-            # .add_params(hover)
         )
         st.altair_chart(roi.interactive(), use_container_width=True)
 
+        rps_df = pd.melt(rps_dff, id_vars=["date"], 
+                         value_vars=["StatusQuo"],#, "Pessimistic", "Optimistic"], 
+                         var_name='Scenario', 
+                         value_name='%')
+        rps = (
+            alt.Chart(rps_df)
+            .mark_line()
+            .encode(x=alt.X("date", title="", axis=alt.Axis(labelAngle=-45)), 
+                    y=alt.Y("%"), color=alt.Color('Scenario', legend=None))
+            .properties(title="1Y Return per Sector")
+            .configure_title(fontSize=14, anchor='middle')
+        )
+        st.altair_chart(rps.interactive(), use_container_width=True)
+
     with col2:
-        # pledge_per_qap_df = my_melt(cil_df_historical, cil_df_forecast, 'day_pledge_per_QAP')
         pledge_per_qap_df = pd.melt(pledge_dff, id_vars=["date"],
                                     value_vars=["StatusQuo"],#, "Pessimistic", "Optimistic"], 
                                     var_name='Scenario', value_name='FIL')
@@ -176,6 +163,20 @@ def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
             .configure_title(fontSize=14, anchor='middle')
         )
         st.altair_chart(minting.interactive(), use_container_width=True)
+
+        drps_df = pd.melt(drps_dff, id_vars=["date"], 
+                         value_vars=["StatusQuo"],#, "Pessimistic", "Optimistic"], 
+                         var_name='Scenario', 
+                         value_name='%')
+        drps = (
+            alt.Chart(drps_df)
+            .mark_line()
+            .encode(x=alt.X("date", title="", axis=alt.Axis(labelAngle=-45)), 
+                    y=alt.Y("%"), color=alt.Color('Scenario', legend=None))
+            .properties(title="Day Return per Sector")
+            .configure_title(fontSize=14, anchor='middle')
+        )
+        st.altair_chart(drps.interactive(), use_container_width=True)
 
     with col3:
         cs_df = pd.melt(cs_dff, id_vars=["date"],
@@ -203,6 +204,20 @@ def plot_panel(scenario_results, baseline, start_date, current_date, end_date):
             .configure_title(fontSize=14, anchor='middle')
         )
         st.altair_chart(locked.interactive(), use_container_width=True)
+
+        dnr_df = pd.melt(dnr_dff, id_vars=["date"], 
+                         value_vars=["StatusQuo"],#, "Pessimistic", "Optimistic"], 
+                         var_name='Scenario', 
+                         value_name='%')
+        dnr = (
+            alt.Chart(dnr_df)
+            .mark_line()
+            .encode(x=alt.X("date", title="", axis=alt.Axis(labelAngle=-45)), 
+                    y=alt.Y("%"), color=alt.Color('Scenario', legend=None))
+            .properties(title="Day Network Reward")
+            .configure_title(fontSize=14, anchor='middle')
+        )
+        st.altair_chart(dnr.interactive(), use_container_width=True)
 
 
 def add_costs(results_dict, cost_scaling_constant=0.1, filp_scaling_cost_pct=0.5):
@@ -242,33 +257,6 @@ def run_sim(rbp, rr, fpr, lock_target, start_date, current_date, forecast_length
         sector_duration_days,
         offline_data
     )
-    # simulation_results = add_costs(simulation_results, cost_scaling_constant, filp_scaling_cost_pct)
-    # pib_per_sector = C.PIB / C.SECTOR_SIZE
-    # simulation_results['day_rewards_per_PIB'] = simulation_results['day_rewards_per_sector'] * pib_per_sector
-    # # compute yearly cumulative returns
-    # pledge = simulation_results['day_pledge_per_QAP']
-    # rps = simulation_results['1y_return_per_sector']
-    # rpp = rps * pib_per_sector
-    # simulation_results['1y_return_per_pib'] = rpp
-    # days_1y = 365
-    # yearly_returns_df = pd.DataFrame({
-    #     'date': [
-    #         str(current_date), 
-    #         str(current_date+timedelta(days=365*1)), 
-    #         str(current_date+timedelta(days=365*2)), 
-    #         str(current_date+timedelta(days=365*3)),
-    #         str(current_date+timedelta(days=365*4)),
-    #         str(current_date+timedelta(days=365*5)),
-    #     ],
-    #     '1y_return_per_pib': [
-    #         float(rpp[0]), 
-    #         float(rpp[days_1y]), 
-    #         float(rpp[days_1y*2]),  
-    #         float(rpp[days_1y*3]), 
-    #         float(rpp[days_1y*4]), 
-    #         float(rpp[days_1y*5]), 
-    #     ],
-    # })
     return simulation_results #, yearly_returns_df
 
 def forecast_economy(start_date=None, current_date=None, end_date=None, forecast_length_days=365*6):
@@ -277,21 +265,16 @@ def forecast_economy(start_date=None, current_date=None, end_date=None, forecast
     rb_onboard_power_pib_day =  st.session_state['rbp_slider']
     renewal_rate_pct = st.session_state['rr_slider']
     fil_plus_rate_pct = st.session_state['fpr_slider']
-    # cost_scaling_constant = st.session_state['cost_scaling_constant']
-    # filp_scaling_cost_pct = st.session_state['filp_scaling_cost_pct']
+    lock_target = st.session_state['lock_target_slider']
 
-    lock_target = 0.3
     sector_duration_days = 360
     
     # get offline data
     t2 = time.time()
     offline_data, _, _, _ = get_offline_data(start_date, current_date, end_date)
     t3 = time.time()
-    # d.debug(f"Time to get historical data: {t3-t2}")
-
+    
     # run simulation for the configured scenario, and for a pessimsitc and optimistic version of it
-    # scenario_scalers = [0.5, 1.0, 1.5]
-    # scenario_strings = ['pessimistic', 'status-quo', 'optimistic']
     scenario_scalers = [1.0]
     scenario_strings = ['status-quo']
     scenario_results = {}
@@ -315,9 +298,7 @@ def forecast_economy(start_date=None, current_date=None, end_date=None, forecast
     # plot
     plot_panel(scenario_results, baseline, start_date, current_date, end_date)
     t4 = time.time()
-    # d.debug(f"Time to forecast: {t4-t3}")
-    # d.debug(f"Total Time: {t4-t1}")
-
+    
 def main():
     st.set_page_config(
         page_title="Filecoin Economics Explorer",
@@ -339,11 +320,7 @@ def main():
     _, smoothed_last_historical_rbp, smoothed_last_historical_rr, smoothed_last_historical_fpr = get_offline_data(start_date, current_date, end_date)
     smoothed_last_historical_renewal_pct = int(smoothed_last_historical_rr * 100)
     smoothed_last_historical_fil_plus_pct = int(smoothed_last_historical_fpr * 100)
-    # d.debug('rbp:%0.02f, rr:%d, fpr:%d' % (smoothed_last_historical_rbp, smoothed_last_historical_rr, smoothed_last_historical_fpr))
-    # d.debug(smoothed_last_historical_rbp)
-    # d.debug(smoothed_last_historical_renewal_pct)
-    # d.debug(smoothed_last_historical_fil_plus_pct)
-
+    
     with st.sidebar:
         st.title('Filecoin Economics Explorer')
 
@@ -353,12 +330,9 @@ def main():
                 on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
         st.slider("FIL+ Rate (Percentage)", min_value=10, max_value=99, value=smoothed_last_historical_fil_plus_pct, step=1, format='%d', key="fpr_slider",
                 on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
+        st.slider("Lock Target", min_value=0.05, max_value=0.5, value=0.3, step=0.01, format='%0.02f', key="lock_target_slider",
+                on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
         
-        # st.slider("Cost Factor", min_value=0.0, max_value=0.2, value=0.1, step=0.01, format='%0.02f', key="cost_scaling_constant",
-        #         on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
-        # st.slider("Scaling Cost Fraction", min_value=0.0, max_value=1.0, value=0.5, step=0.01, format='%0.02f', key="filp_scaling_cost_pct",
-        #         on_change=forecast_economy, kwargs=forecast_kwargs, disabled=False, label_visibility="visible")
-
         st.button("Forecast", on_click=forecast_economy, kwargs=forecast_kwargs, key="forecast_button")
 
     
