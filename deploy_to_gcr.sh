@@ -1,6 +1,6 @@
 #!/bin/bash
 
-gcloud builds submit --tag gcr.io/cel-streamlit/mechafil-jax-web
+gcloud builds submit --tag gcr.io/cel-streamlit/mechafil-jax-web --no-cache
 
 gcloud run deploy mechafil-jax-web \
   --image gcr.io/cel-streamlit/mechafil-jax-web \
