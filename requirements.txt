@@ -1,12 +1,11 @@
-pandas==1.5.3
+pandas==2.3.1
 streamlit
 altair
 watchdog
-jax==0.4.23
-jaxlib==0.4.23
-numpy==1.26.4
+jax==0.7.0
+jaxlib==0.7.0
+numpy==2.3.2
 scipy
 matplotlib
-pystarboard @ git+https://github.com/celtd/pystarboard.git
 scenario-generator @ git+https://github.com/celtd/scenario-generator.git
-mechafil-jax @ git+https://github.com/celtd/mechafil-jax.git@7da81322d08d7d35b7a8595bf4c4728aaf3f01e7
+mechafil-jax @ git+https://github.com/celtd/mechafil-jax.git@jax_update
